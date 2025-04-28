@@ -22,19 +22,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({ onSearch, initialQuery = '
 
   return (
     <form onSubmit={handleSubmit} className="search-form">
-      <div className="search-container">
-        <MagnifyingGlassIcon className="search-icon" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search for a movie..."
-          className="search-input"
-        />
-        <button type="submit" className="btn btn-primary search-button">
-          Search
-        </button>
-      </div>
+      <MagnifyingGlassIcon className="search-icon" />
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search for movies..."
+        className="search-input"
+        aria-label="Search for movies"
+      />
+      <button type="submit" className="search-button">
+        Search
+      </button>
     </form>
   );
 }; 

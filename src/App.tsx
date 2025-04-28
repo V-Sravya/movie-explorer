@@ -10,30 +10,24 @@ const Navigation: React.FC = () => {
   const location = useLocation();
 
   return (
-    <nav className="bg-gray-800 text-white p-4">
+    <nav>
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="flex items-center space-x-2">
-          <HomeIcon className="h-6 w-6" />
-          <span className="hidden sm:inline">Home</span>
-        </Link>
-        <div className="flex space-x-4">
+        <div className="flex items-center space-x-2">
           <Link
             to="/"
-            className={`flex items-center space-x-2 ${
-              location.pathname === '/' ? 'text-blue-400' : 'text-gray-300 hover:text-white'
-            }`}
+            className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
           >
-            <FilmIcon className="h-6 w-6" />
-            <span className="hidden sm:inline">Movies</span>
+            <HomeIcon />
+            <span>Home</span>
           </Link>
+        </div>
+        <div className="flex space-x-4">
           <Link
             to="/watchlist"
-            className={`flex items-center space-x-2 ${
-              location.pathname === '/watchlist' ? 'text-blue-400' : 'text-gray-300 hover:text-white'
-            }`}
+            className={`nav-link ${location.pathname === '/watchlist' ? 'active' : ''}`}
           >
-            <BookmarkIcon className="h-6 w-6" />
-            <span className="hidden sm:inline">Watchlist</span>
+            <BookmarkIcon />
+            <span>Watchlist</span>
           </Link>
         </div>
       </div>
