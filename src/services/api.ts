@@ -34,6 +34,52 @@ export const searchMovies = async (query: string, page: number = 1): Promise<Mov
   }
 };
 
+export const getTrendingMovies = async (page: number = 1): Promise<MovieSearchResponse> => {
+  try {
+    const response = await api.get('/', {
+      params: {
+        s: 'movie',
+        page,
+        type: 'movie',
+        y: new Date().getFullYear(),
+      },
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch trending movies:', error);
+    return {
+      Search: [],
+      totalResults: '0',
+      Response: 'False',
+      Error: 'Failed to fetch trending movies'
+    };
+  }
+};
+
+export const getTopRatedMovies = async (page: number = 1): Promise<MovieSearchResponse> => {
+  try {
+    const response = await api.get('/', {
+      params: {
+        s: 'movie',
+        page,
+        type: 'movie',
+        sort: 'rating',
+      },
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch top rated movies:', error);
+    return {
+      Search: [],
+      totalResults: '0',
+      Response: 'False',
+      Error: 'Failed to fetch top rated movies'
+    };
+  }
+};
+
 export const getMovieById = async (id: string): Promise<MovieDetail> => {
   try {
     const response = await api.get('/', {

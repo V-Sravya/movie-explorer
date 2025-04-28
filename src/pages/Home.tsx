@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Movie } from '../types/movie';
-import { searchMovies } from '../services/api';
+import { searchMovies, getTrendingMovies, getTopRatedMovies } from '../services/api';
 import { MovieCard } from '../components/MovieCard';
 import { SearchBar } from '../components/SearchBar';
 import { Pagination } from '../components/Pagination';
 import { useMovieContext } from '../context/MovieContext';
+
+type MovieSection = 'trending' | 'top-rated' | 'search';
 
 export const Home: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -13,33 +15,39 @@ export const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('movie');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeSection, setActiveSection] = useState<MovieSection>('trending');
   const { addToWatchlist, removeFromWatchlist, watchlist } = useMovieContext();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Load search state from localStorage on component mount
+  // Reset state when navigating to home
   useEffect(() => {
-    const savedSearchQuery = localStorage.getItem('searchQuery');
-    const savedPage = localStorage.getItem('currentPage');
-    
-    if (savedSearchQuery) {
-      setSearchQuery(savedSearchQuery);
+    if (location.pathname === '/') {
+      setActiveSection('trending');
+      setSearchQuery('');
+      setCurrentPage(1);
+      fetchMovies('trending');
     }
-    
-    if (savedPage) {
-      setCurrentPage(parseInt(savedPage));
-    }
-    
-    // Fetch movies with saved state
-    fetchMovies(savedSearchQuery || 'movie', savedPage ? parseInt(savedPage) : 1);
-  }, []);
+  }, [location.pathname]);
 
-  const fetchMovies = async (query: string = 'movie', page: number = 1) => {
+  const fetchMovies = async (section: MovieSection, query: string = '', page: number = 1) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await searchMovies(query, page);
+      let response;
+
+      switch (section) {
+        case 'trending':
+          response = await getTrendingMovies(page);
+          break;
+        case 'top-rated':
+          response = await getTopRatedMovies(page);
+          break;
+        case 'search':
+          response = await searchMovies(query, page);
+          break;
+      }
       
       if (response.Response === 'False') {
         setError(response.Error || 'No movies found');
@@ -53,10 +61,6 @@ export const Home: React.FC = () => {
       const total = parseInt(response.totalResults);
       const pages = Math.max(1, Math.ceil(total / 10));
       setTotalPages(pages);
-      
-      // Save search state to localStorage
-      localStorage.setItem('searchQuery', query);
-      localStorage.setItem('currentPage', page.toString());
     } catch (err) {
       setError('Failed to fetch movies. Please try again later.');
       console.error(err);
@@ -70,12 +74,20 @@ export const Home: React.FC = () => {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
-    fetchMovies(query, 1);
+    setActiveSection('search');
+    fetchMovies('search', query, 1);
+  };
+
+  const handleSectionChange = (section: MovieSection) => {
+    setActiveSection(section);
+    setCurrentPage(1);
+    setSearchQuery('');
+    fetchMovies(section);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    fetchMovies(searchQuery, page);
+    fetchMovies(activeSection, searchQuery, page);
   };
 
   // Check if a movie is in the watchlist
@@ -95,7 +107,31 @@ export const Home: React.FC = () => {
     <div className="container py-8">
       <h1 className="text-4xl font-bold text-center mb-8">Movie Explorer</h1>
       
-      {/* Search section with improved accessibility */}
+      {/* Navigation Tabs */}
+      <div className="flex justify-center space-x-4 mb-8">
+        <button
+          onClick={() => handleSectionChange('trending')}
+          className={`px-4 py-2 rounded-lg ${
+            activeSection === 'trending'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Trending
+        </button>
+        <button
+          onClick={() => handleSectionChange('top-rated')}
+          className={`px-4 py-2 rounded-lg ${
+            activeSection === 'top-rated'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Top Rated
+        </button>
+      </div>
+      
+      {/* Search section */}
       <div className="search-section mb-8">
         <SearchBar 
           onSearch={handleSearch} 
@@ -108,7 +144,7 @@ export const Home: React.FC = () => {
       </div>
 
       {/* Movie grid */}
-      <div className="grid mt-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
         {movies.length === 0 && !error && !loading ? (
           <div className="text-center col-span-full">
             <p>No movies found. Try another search term.</p>
