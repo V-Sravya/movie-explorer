@@ -8,6 +8,7 @@ import { Pagination } from '../components/Pagination';
 import { useMovieContext } from '../context/MovieContext';
 
 type MovieSection = 'trending' | 'top-rated' | 'search';
+const MOVIES_PER_PAGE = 12;
 
 interface LocationState {
   searchQuery?: string;
@@ -89,7 +90,7 @@ export const Home: React.FC = () => {
       
       const newMovies = response.Search || [];
       const total = parseInt(response.totalResults);
-      const pages = Math.max(1, Math.ceil(total / 10));
+      const pages = Math.max(1, Math.ceil(total / MOVIES_PER_PAGE));
       
       setMovies(newMovies);
       setTotalPages(pages);
